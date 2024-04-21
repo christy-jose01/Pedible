@@ -47,7 +47,7 @@ class State(rx.State):
         self.webcam_open = True
         print("webcam open", self.webcam_open)
 
-    def handle_screenshot(self, img_data_uri: str):
+    def handle_screenshot(self,img_data_uri: str):
         """Webcam screenshot upload handler.
         Args:
             img_data_uri: The data uri of the screenshot (from upload_screenshot).
@@ -56,13 +56,15 @@ class State(rx.State):
 
             return
         self.last_screenshot_timestamp = time.strftime("%H:%M:%S")
+        self.if_img=True
         with urlopen(img_data_uri) as img:
             self.last_screenshot = Image.open(img)
             self.last_screenshot.load()
-            # convert to webp during serialization for smaller size
             self.last_screenshot.format = "WEBP"  # type: ignore
             self.webcam_open=False
-            self.if_img=True
+        # return rx.redirect("/capture")
+
+    def process_img(self):
             img = self.last_screenshot
 
             inputs = processor(images=img, return_tensors="pt")
@@ -80,8 +82,8 @@ class State(rx.State):
             print(self.isedible)
             print(self.reason)
             print(self.severity)
-        # return rx.redirect("/capture")
-
+            return rx.redirect("/analysis")
+            
 
 def last_screenshot_widget() -> rx.Component:
     """Widget for displaying the last screenshot and timestamp."""
@@ -191,6 +193,7 @@ def WebcamPage() ->rx.Component:
                                 on_click=upload_screenshot(
                                     ref="webcam",
                                     handler=State.handle_screenshot,  # type: ignore
+
                                 ),
                             ),
                             align= "center",
@@ -220,7 +223,7 @@ def WebcamPage() ->rx.Component:
                                             rx.button(
                                                 "Use",
                                                 size = "4",
-                                                on_click = rx.redirect("/analysis")
+                                                on_click = State.process_img,
                                             ),
                                             align = "right",
                                         ),
