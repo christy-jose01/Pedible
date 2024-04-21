@@ -75,6 +75,8 @@ class State(rx.State):
             model_prediction = model.config.id2label[predicted_class_idx]
             response = gemini(model_prediction,img)
             print(response)
+            if type(response) is list:
+                response = response[0]
             self.isedible = response['isEdible']
             self.reason = response['reason']
             self.severity = response['severity'] 
@@ -105,47 +107,65 @@ def AnalysisPage() -> rx.Component:
     return rx.fragment(
         rx.center(
             rx.vstack(
-                rx.code(rx.heading("Analysis", size="9")),
+                rx.code(rx.heading("Analysis", size="9", align="center")),
                 # rx.code(rx.text("yap and cap")),
                 
                 # checks if edible
                 rx.cond(
                     State.isedible,
                     rx.vstack(
-                        rx.hstack(
+                        rx.vstack(
                             rx.heading("Is this edible?", size = "5"),
-                            rx.badge("yes"),
+                            rx.hstack(
+                                rx.text("YES",color= 'green', weight='bold', size='9', align='center'),
+                                rx.image(
+                                    src = "/yes.png",
+                                    width = "50px",
+                                    height = "50px",
+                                )
+                            )
                         ),
                     ),
-                    rx.hstack(
+                    rx.vstack(
                         rx.heading("Is this edible?", size = "5"),
-                        rx.badge("no"),
+                        rx.hstack(
+                            rx.text("NO",color = 'red', weight='bold', size='9', align='center'),
+                            rx.image(
+                                    src = "/no.png",
+                                    width = "50px",
+                                    height = "50px",
+                                )
+                        )
                     ),
                 ),
 
                 # prints reason
-                rx.hstack(
+                rx.vstack(
                     rx.heading("Reason", size = "5"),
-                    rx.badge(State.reason),
+                    rx.text(State.reason),
                 ),
 
                 #prints severity
-                rx.hstack(
-                    rx.heading("Severity", size = "5"),
-                    rx.badge(State.severity),
+                rx.vstack(
+                    rx.box(
+                        rx.heading("Severity", size = "5"),
+                        rx.text(State.severity, size= "4"),
+                    )
                 ),
 
-                rx.chakra.alert(
-                    rx.chakra.alert_icon(),
-                    rx.chakra.alert_title(
-                        "Error Reflex version is out of date."
-                    ),
-                    status="error",
-                ),
+                # rx.chakra.alert(
+                #     rx.chakra.alert_icon(),
+                #     rx.chakra.alert_title(
+                #         "Error Reflex version is out of date."
+                #     ),
+                #     status="error",
+                # ),
             ),
             height="100vh",
-
-
+            align="center",
+            justify="center",
+            spacing = "2",
+            direction = "column",
         )
     )
 
@@ -315,6 +335,12 @@ def Homepage() -> rx.Component:
                         on_click= State.toggle_webcam(),
                         size="4",
                     ),
+                    rx.image(
+                                    src = "/doge.png",
+                                    width = "50px",
+                                    height = "50px",
+                                )
+                    
                     # rx.upload(
                     #     rx.text(
                     #         "Drag and drop files here or click to select files"
