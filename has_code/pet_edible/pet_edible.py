@@ -29,6 +29,12 @@ class State(rx.State):
 
     def toggle_webcam(self):
         self.webcam_open = not self.webcam_open
+        print("webcam open", self.webcam_open)
+        return rx.redirect("/webcam")
+    
+    def retake_webcam(self):
+        self.webcam_open = True
+        print("webcam open", self.webcam_open)
 
     def handle_screenshot(self, img_data_uri: str):
         """Webcam screenshot upload handler.
@@ -45,6 +51,8 @@ class State(rx.State):
             self.last_screenshot.format = "WEBP"  # type: ignore
             self.webcam_open=False
             self.if_img=True
+        # return rx.redirect("/capture")
+
 
 def last_screenshot_widget() -> rx.Component:
     """Widget for displaying the last screenshot and timestamp."""
@@ -52,14 +60,28 @@ def last_screenshot_widget() -> rx.Component:
         rx.cond(
             State.last_screenshot,
             rx.fragment(
-                rx.image(src=State.last_screenshot),
-                rx.text(State.last_screenshot_timestamp),
+                rx.image(src=State.last_screenshot, border_radius = "10%"),
             ),
 
         ),
-        height="270px",
+        # height="270px",
+        align= "center",
+        width = "100%",
     )
 
+@rx.page(route="/analysis", title= "Analysis")
+def AnalysisPage() -> rx.Component:
+    return rx.fragment(
+        rx.center(
+            rx.chakra.alert(
+                rx.chakra.alert_icon(),
+                rx.chakra.alert_title(
+                    "Error Reflex version is out of date."
+                ),
+                status="error",
+            ),
+        )
+    )
 
 def webcam_upload_component(ref: str) -> rx.Component:
     """Component for displaying webcam preview and uploading screenshots.
@@ -83,21 +105,11 @@ def webcam_upload_component(ref: str) -> rx.Component:
         align="center",
     )
 
-
-
-def index() -> rx.Component:
+@rx.page(route="/webcam", title="WebcamPage")
+def WebcamPage() ->rx.Component:
     return rx.fragment(
             rx.center(
-                # this stack is home page
                 rx.vstack(
-                    rx.heading("Can my dog eat this?", size="9"),
-                    rx.code(rx.text("Check what your dog can eat")),
-                    rx.button(
-                        "Take image",
-                        on_click= State.toggle_webcam(),
-                        size="4",
-                    ),
-
                     # this stack is webcam page
                     # event handler for Take image button
                     rx.cond(
@@ -120,34 +132,42 @@ def index() -> rx.Component:
                             align= "center",
                             width = "100%",
                         ),
+
+                        # this is if the image has been captured
                         rx.cond(
                             State.if_img,
                             rx.vstack(
+                                last_screenshot_widget(),
                                 rx.hstack(
-                                rx.box(
-                                    rx.fragment(
-                                        rx.button(
-                                            "Save",
-                                            size = "4",
+                                    # save button
+                                    rx.box(
+                                        rx.fragment(
+                                            rx.button(
+                                                "Use",
+                                                size = "4",
+                                                on_click = rx.redirect("/analysis")
+                                            ),
+                                            align = "left",
                                         ),
-                                        align = "left",
                                     ),
+                                    # retake button
+                                    rx.box(
+                                        rx.fragment(
+                                            rx.button(
+                                                "Retake",
+                                                size = "4",
+                                                on_click=State.retake_webcam,
+                                            ),
+                                            align = "right",
+                                        ),
+                                    ),
+                                    width = "100%",
+                                    justify="between",
                                 ),
+
                                 
-                                rx.box(
-                                    rx.fragment(
-                                        rx.button(
-                                            "Retake",
-                                            size = "4",
-                                        ),
-                                        align = "right",
-                                    ),
-                                ),
                                 width = "100%",
-                                justify="between",
-                            ),
-                            last_screenshot_widget(),
-                            width = "100%",
+                                align= "center",
                             ),
                         )
                         
@@ -158,7 +178,80 @@ def index() -> rx.Component:
                 ),
                 height="100vh",
     )
+)
+
+@rx.page(route="/capture", title="CapturePage")
+# def CapturePage() ->rx.Component:
+#     return rx.fragment(
+#             rx.center(
+#                 # this stack is home page
+#                 rx.vstack(
+#                     # this stack is Capture page
+#                     # event handler for when image is captured
+#                     rx.cond(
+#                         State.if_img,
+#                         rx.vstack(
+#                             rx.hstack(
+#                                 # save button
+#                                 rx.box(
+#                                     rx.fragment(
+#                                         rx.button(
+#                                             "Save",
+#                                             size = "4",
+#                                             on_click=upload_screenshot(
+#                                                 ref="webcam",
+#                                                 handler=State.handle_screenshot,  # type: ignore
+#                                             ),                                            
+#                                         ),
+#                                         align = "left",
+#                                     ),
+#                                 ),
+                                
+#                                 # retake button
+#                                 rx.box(
+#                                     rx.fragment(
+#                                         rx.button(
+#                                             "Retake",
+#                                             size = "4",
+#                                             on_click= State.retake_webcam,
+#                                         ),
+#                                         align = "right",
+#                                     ),
+#                                 ),
+#                             # dist between buttons on horizontal    
+#                             width = "100%",
+#                             justify="between",
+#                         ),
+#                         # screenshot after the button
+#                         last_screenshot_widget(),
+#                         width = "100%",
+#                         ),
+#                     ),
+#                     align="center",
+#                     spacing="7",
+#                     font_size="2em",
+#                 ),
+#                 height="100vh",
+#     )
+# )
+
+@rx.page(route="/", title="HomePage")
+def Homepage() -> rx.Component:
+    return rx.fragment(
+            rx.center(
+                # this stack is home page
+                rx.vstack(
+                    rx.heading("Can my dog eat this?", size="9"),
+                    rx.code(rx.text("Check what your dog can eat")),
+                    rx.button(
+                        "Take image",
+                        on_click= State.toggle_webcam(),
+                        size="4",
+                    ),
+                ),
+                height="100vh",
     )
+)
 
 
 app = rx.App(
@@ -169,4 +262,80 @@ app = rx.App(
         accent_color="brown",
     ),
     )
-app.add_page(index)
+# app.add_page(Homepage, route="/")
+# app.add_page(WebcamPage)
+# app.add_page(CapturePage)
+# def Homepage() -> rx.Component:
+#     return rx.fragment(
+#             rx.center(
+#                 # this stack is home page
+#                 rx.vstack(
+#                     rx.heading("Can my dog eat this?", size="9"),
+#                     rx.code(rx.text("Check what your dog can eat")),
+#                     rx.button(
+#                         "Take image",
+#                         on_click= State.toggle_webcam(),
+#                         size="4",
+#                     ),
+
+#                 #     # this stack is webcam page
+#                 #     # event handler for Take image button
+#                 #     rx.cond(
+#                 #         State.webcam_open,
+#                 #         rx.vstack(
+#                 #             # webcam display
+#                 #             webcam(
+#                 #                 id="webcam",
+#                 #                 border_radius = "10%",),
+#                 #             # this is the click button
+#                 #             rx.button(
+#                 #                 width="60px", 
+#                 #                 height="60px", 
+#                 #                 border_radius="100%",
+#                 #                 on_click=upload_screenshot(
+#                 #                     ref="webcam",
+#                 #                     handler=State.handle_screenshot,  # type: ignore
+#                 #                 ),
+#                 #             ),
+#                 #             align= "center",
+#                 #             width = "100%",
+#                 #         ),
+#                 #         rx.cond(
+#                 #             State.if_img,
+#                 #             rx.vstack(
+#                 #                 rx.hstack(
+#                 #                 rx.box(
+#                 #                     rx.fragment(
+#                 #                         rx.button(
+#                 #                             "Save",
+#                 #                             size = "4",
+#                 #                         ),
+#                 #                         align = "left",
+#                 #                     ),
+#                 #                 ),
+                                
+#                 #                 rx.box(
+#                 #                     rx.fragment(
+#                 #                         rx.button(
+#                 #                             "Retake",
+#                 #                             size = "4",
+#                 #                         ),
+#                 #                         align = "right",
+#                 #                     ),
+#                 #                 ),
+#                 #                 width = "100%",
+#                 #                 justify="between",
+#                 #             ),
+#                 #             last_screenshot_widget(),
+#                 #             width = "100%",
+#                 #             ),
+#                 #         )
+                        
+#                 #     ),
+#                 #     align="center",
+#                 #     spacing="7",
+#                 #     font_size="2em",
+#                 ),
+#                 height="100vh",
+#     )
+# )
