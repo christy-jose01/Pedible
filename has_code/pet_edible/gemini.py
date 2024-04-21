@@ -43,7 +43,7 @@ def gemini(model_prediction, ImageToParse):
 
     prompt = f"""Tell me if the image is {model_prediction} and it is something edible for a dog and store it into isEdible.
     Give me the good or bad reasons (dependent on isEdible) and store it into reason.
-    Classify the severity of the food and store it into severity. Should be between Most Severe, Medium Severity, Least Severe.
+    Classify the severity of the food and store it into severity. Should be between Most Severe, Medium Severity, Moderate, Healthy.
     Output a JSON file with the format of {{'isEdible': boolean, 'reason': string, 'severity': string}}
     An example: {{'isEdible': False, 'reason': 'Chocolate is bad for dogs.', 'severity': 'Most Severe'}}"""
 

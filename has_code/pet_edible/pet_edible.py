@@ -53,7 +53,7 @@ class State(rx.State):
             img_data_uri: The data uri of the screenshot (from upload_screenshot).
         """
         if self.loading:
-            
+
             return
         self.last_screenshot_timestamp = time.strftime("%H:%M:%S")
         with urlopen(img_data_uri) as img:
@@ -102,13 +102,48 @@ def last_screenshot_widget() -> rx.Component:
 def AnalysisPage() -> rx.Component:
     return rx.fragment(
         rx.center(
-            rx.chakra.alert(
-                rx.chakra.alert_icon(),
-                rx.chakra.alert_title(
-                    "Error Reflex version is out of date."
+            rx.vstack(
+                rx.code(rx.heading("Analysis", size="9")),
+                # rx.code(rx.text("yap and cap")),
+                
+                # checks if edible
+                rx.cond(
+                    State.isedible,
+                    rx.vstack(
+                        rx.hstack(
+                            rx.heading("Is this edible?", size = "5"),
+                            rx.badge("yes"),
+                        ),
+                    ),
+                    rx.hstack(
+                        rx.heading("Is this edible?", size = "5"),
+                        rx.badge("no"),
+                    ),
                 ),
-                status="error",
+
+                # prints reason
+                rx.hstack(
+                    rx.heading("Reason", size = "5"),
+                    rx.badge(State.reason),
+                ),
+
+                #prints severity
+                rx.hstack(
+                    rx.heading("Severity", size = "5"),
+                    rx.badge(State.severity),
+                ),
+
+                rx.chakra.alert(
+                    rx.chakra.alert_icon(),
+                    rx.chakra.alert_title(
+                        "Error Reflex version is out of date."
+                    ),
+                    status="error",
+                ),
             ),
+            height="100vh",
+
+
         )
     )
 
@@ -168,17 +203,6 @@ def WebcamPage() ->rx.Component:
                             rx.vstack(
                                 last_screenshot_widget(),
                                 rx.hstack(
-                                    # save button
-                                    rx.box(
-                                        rx.fragment(
-                                            rx.button(
-                                                "Use",
-                                                size = "4",
-                                                on_click = rx.redirect("/analysis")
-                                            ),
-                                            align = "left",
-                                        ),
-                                    ),
                                     # retake button
                                     rx.box(
                                         rx.fragment(
@@ -186,6 +210,17 @@ def WebcamPage() ->rx.Component:
                                                 "Retake",
                                                 size = "4",
                                                 on_click=State.retake_webcam,
+                                            ),
+                                            align = "left",
+                                        ),
+                                    ),
+                                    # save button
+                                    rx.box(
+                                        rx.fragment(     
+                                            rx.button(
+                                                "Use",
+                                                size = "4",
+                                                on_click = rx.redirect("/analysis")
                                             ),
                                             align = "right",
                                         ),
@@ -298,81 +333,4 @@ app = rx.App(
         radius="large",
         accent_color="brown",
     ),
-    )
-# app.add_page(Homepage, route="/")
-# app.add_page(WebcamPage)
-# app.add_page(CapturePage)
-# def Homepage() -> rx.Component:
-#     return rx.fragment(
-#             rx.center(
-#                 # this stack is home page
-#                 rx.vstack(
-#                     rx.heading("Can my dog eat this?", size="9"),
-#                     rx.code(rx.text("Check what your dog can eat")),
-#                     rx.button(
-#                         "Take image",
-#                         on_click= State.toggle_webcam(),
-#                         size="4",
-#                     ),
-
-#                 #     # this stack is webcam page
-#                 #     # event handler for Take image button
-#                 #     rx.cond(
-#                 #         State.webcam_open,
-#                 #         rx.vstack(
-#                 #             # webcam display
-#                 #             webcam(
-#                 #                 id="webcam",
-#                 #                 border_radius = "10%",),
-#                 #             # this is the click button
-#                 #             rx.button(
-#                 #                 width="60px", 
-#                 #                 height="60px", 
-#                 #                 border_radius="100%",
-#                 #                 on_click=upload_screenshot(
-#                 #                     ref="webcam",
-#                 #                     handler=State.handle_screenshot,  # type: ignore
-#                 #                 ),
-#                 #             ),
-#                 #             align= "center",
-#                 #             width = "100%",
-#                 #         ),
-#                 #         rx.cond(
-#                 #             State.if_img,
-#                 #             rx.vstack(
-#                 #                 rx.hstack(
-#                 #                 rx.box(
-#                 #                     rx.fragment(
-#                 #                         rx.button(
-#                 #                             "Save",
-#                 #                             size = "4",
-#                 #                         ),
-#                 #                         align = "left",
-#                 #                     ),
-#                 #                 ),
-                                
-#                 #                 rx.box(
-#                 #                     rx.fragment(
-#                 #                         rx.button(
-#                 #                             "Retake",
-#                 #                             size = "4",
-#                 #                         ),
-#                 #                         align = "right",
-#                 #                     ),
-#                 #                 ),
-#                 #                 width = "100%",
-#                 #                 justify="between",
-#                 #             ),
-#                 #             last_screenshot_widget(),
-#                 #             width = "100%",
-#                 #             ),
-#                 #         )
-                        
-#                 #     ),
-#                 #     align="center",
-#                 #     spacing="7",
-#                 #     font_size="2em",
-#                 ),
-#                 height="100vh",
-#     )
-# )
+)
