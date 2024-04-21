@@ -9,12 +9,20 @@ from pathlib import Path
 from urllib.request import urlopen
 from PIL import Image
 
+import urllib
+from PIL import Image
+import requests
+from transformers import BeitImageProcessor, BeitForImageClassification
+from .gemini import gemini
+
 # Identifies a particular webcam component in the DOM
 WEBCAM_REF = "webcam"
 
 docs_url = "https://reflex.dev/docs/getting-started/introduction/"
 filename = f"{config.app_name}/{config.app_name}.py"
 
+processor = BeitImageProcessor.from_pretrained('microsoft/beit-base-patch16-224-pt22k-ft22k')
+model = BeitForImageClassification.from_pretrained('microsoft/beit-base-patch16-224-pt22k-ft22k')
 
 class State(rx.State):
     """The app state."""
@@ -23,13 +31,16 @@ class State(rx.State):
     loading: bool = False
     webcam_open: bool = False
     if_img: bool = False
+    isedible: bool
+    reason: str
+    severity: str
 
     def img_taken(self):
         self.if_img = not self.if_img
 
     def toggle_webcam(self):
         self.webcam_open = not self.webcam_open
-        print("webcam open", self.webcam_open)
+        # print("webcam open", self.webcam_open)
         return rx.redirect("/webcam")
     
     def retake_webcam(self):
@@ -42,6 +53,7 @@ class State(rx.State):
             img_data_uri: The data uri of the screenshot (from upload_screenshot).
         """
         if self.loading:
+            
             return
         self.last_screenshot_timestamp = time.strftime("%H:%M:%S")
         with urlopen(img_data_uri) as img:
@@ -51,6 +63,23 @@ class State(rx.State):
             self.last_screenshot.format = "WEBP"  # type: ignore
             self.webcam_open=False
             self.if_img=True
+            img = self.last_screenshot
+
+            inputs = processor(images=img, return_tensors="pt")
+            outputs = model(**inputs)
+            logits = outputs.logits
+            # model predicts one of the 21,841 ImageNet-22k classes
+            predicted_class_idx = logits.argmax(-1).item()
+            model_prediction = model.config.id2label[predicted_class_idx]
+            response = gemini(model_prediction,img)
+            print(response)
+            self.isedible = response['isEdible']
+            self.reason = response['reason']
+            self.severity = response['severity'] 
+
+            print(self.isedible)
+            print(self.reason)
+            print(self.severity)
         # return rx.redirect("/capture")
 
 
@@ -248,6 +277,14 @@ def Homepage() -> rx.Component:
                         on_click= State.toggle_webcam(),
                         size="4",
                     ),
+                    # rx.upload(
+                    #     rx.text(
+                    #         "Drag and drop files here or click to select files"
+                    #     ),
+                    #     id="my_upload",
+                    #     border="1px dotted accent_color",
+                    #     padding="5em",
+                    # )
                 ),
                 height="100vh",
     )

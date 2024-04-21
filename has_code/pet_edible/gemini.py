@@ -50,4 +50,5 @@ def gemini(model_prediction, ImageToParse):
     response = model.generate_content([prompt, img], stream=True)
     response.resolve()
     # print(response)
+    print(response.text)
     return json.loads(response.text)
