@@ -114,26 +114,27 @@ def AnalysisPage() -> rx.Component:
                 rx.cond(
                     State.isedible,
                     rx.vstack(
-                        rx.vstack(
+    
                             rx.heading("Is this edible?", size = "5"),
                             rx.hstack(
-                                rx.text("YES",color= 'green', weight='bold', size='9', align='center'),
+                                rx.text("YES",color= 'green', weight='bold', size='9', align='center', margin_top = "3rem"),
                                 rx.image(
                                     src = "/yes.png",
-                                    width = "50px",
-                                    height = "50px",
+                                    width = "150px",
+                                    height = "150px",
                                 )
                             )
-                        ),
+                    
                     ),
                     rx.vstack(
                         rx.heading("Is this edible?", size = "5"),
+                        # yes image
                         rx.hstack(
-                            rx.text("NO",color = 'red', weight='bold', size='9', align='center'),
+                            rx.text("NO",color = 'red', weight='bold', size='9', align='center', margin_top = "3rem"),
                             rx.image(
                                     src = "/no.png",
-                                    width = "50px",
-                                    height = "50px",
+                                    width = "150px",
+                                    height = "150px",
                                 )
                         )
                     ),
@@ -153,6 +154,10 @@ def AnalysisPage() -> rx.Component:
                     )
                 ),
 
+                # button to go to homepage
+                rx.button(
+                    "Go Home",
+                    on_click = rx.redirect("/"),)
                 # rx.chakra.alert(
                 #     rx.chakra.alert_icon(),
                 #     rx.chakra.alert_title(
@@ -161,11 +166,12 @@ def AnalysisPage() -> rx.Component:
                 #     status="error",
                 # ),
             ),
+            width = "100%",
             height="100vh",
             align="center",
-            justify="center",
-            spacing = "2",
-            direction = "column",
+            # justify="center",
+            # spacing = "2",
+            # direction = "column",
         )
     )
 
@@ -328,27 +334,22 @@ def Homepage() -> rx.Component:
             rx.center(
                 # this stack is home page
                 rx.vstack(
-                    rx.heading("Can my dog eat this?", size="9"),
-                    rx.code(rx.text("Check what your dog can eat")),
+                    rx.heading("Can my dog eat this?", size="9", margin_top = "1rem"),
+                    # rx.image(
+                    #     src = "/doge.png",
+                    #     width = "500px",
+                    #     height = "500px",
+                    # ),
+                    rx.code(rx.text("Check what your dog can eat", size = "5", margin_top = "0.5rem")),
                     rx.button(
                         "Take image",
                         on_click= State.toggle_webcam(),
                         size="4",
+                        margin_top = "1rem"
                     ),
-                    rx.image(
-                                    src = "/doge.png",
-                                    width = "50px",
-                                    height = "50px",
-                                )
-                    
-                    # rx.upload(
-                    #     rx.text(
-                    #         "Drag and drop files here or click to select files"
-                    #     ),
-                    #     id="my_upload",
-                    #     border="1px dotted accent_color",
-                    #     padding="5em",
-                    # )
+                    align = "center",
+                    width = "100%",
+
                 ),
                 height="100vh",
     )
