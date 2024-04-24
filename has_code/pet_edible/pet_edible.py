@@ -102,77 +102,75 @@ def last_screenshot_widget() -> rx.Component:
         width = "100%",
     )
 
+def is_edible_analysis():
+    return rx.fragment(
+        rx.cond(
+            State.isedible,
+            rx.hstack(                        
+                rx.text("YES",color= 'green', weight='bold', size='9', align='center', margin_top = "3rem"),
+                rx.image(
+                    src = "/yes.png",
+                    width = "150px",
+                    height = "150px",
+                )
+            ),
+            rx.hstack(
+                rx.text("NO",color = 'red', weight='bold', size='9', align='center', margin_top = "3rem"),
+                rx.image(
+                    src = "/no.png",
+                    width = "150px",
+                    height = "150px",
+                )
+            ),
+        ),
+    )
+
+
+
+def custom_alert(var):
+    return rx.chakra.alert(
+        rx.chakra.alert_icon(),
+        State.severity,
+        status=rx.match(var, ("Healthy", "success"), ("Moderate", "info"), ("Medium Severity", "warning"), "error"),
+    )
+
+@rx.page(route="match")
+def match():
+    return rx.box(
+        custom_alert("Healthy"),
+        custom_alert("Moderate"),
+        custom_alert("Medium Severity"),
+        custom_alert("Most Severe")
+    )
+
 @rx.page(route="/analysis", title= "Analysis")
 def AnalysisPage() -> rx.Component:
     return rx.fragment(
         rx.center(
             rx.vstack(
                 rx.code(rx.heading("Analysis", size="9", align="center")),
-                # rx.code(rx.text("yap and cap")),
-                
+                rx.heading("Is this edible?", size = "5"),
                 # checks if edible
-                rx.cond(
-                    State.isedible,
-                    rx.vstack(
-    
-                            rx.heading("Is this edible?", size = "5"),
-                            rx.hstack(
-                                rx.text("YES",color= 'green', weight='bold', size='9', align='center', margin_top = "3rem"),
-                                rx.image(
-                                    src = "/yes.png",
-                                    width = "150px",
-                                    height = "150px",
-                                )
-                            )
-                    
-                    ),
-                    rx.vstack(
-                        rx.heading("Is this edible?", size = "5"),
-                        # yes image
-                        rx.hstack(
-                            rx.text("NO",color = 'red', weight='bold', size='9', align='center', margin_top = "3rem"),
-                            rx.image(
-                                    src = "/no.png",
-                                    width = "150px",
-                                    height = "150px",
-                                )
-                        )
-                    ),
-                ),
+                is_edible_analysis(),
 
                 # prints reason
-                rx.vstack(
-                    rx.heading("Reason", size = "5"),
-                    rx.text(State.reason),
-                ),
+                rx.heading("Reason", size = "5"),
+                rx.text(State.reason),
 
                 #prints severity
-                rx.vstack(
-                    rx.box(
-                        rx.heading("Severity", size = "5"),
-                        rx.text(State.severity, size= "4"),
-                    )
+                rx.box(rx.heading("Severity", size = "5"), 
+                    custom_alert(State.severity),
                 ),
-
+               
                 # button to go to homepage
-                rx.button(
-                    "Go Home",
-                    on_click = rx.redirect("/"),)
-                # rx.chakra.alert(
-                #     rx.chakra.alert_icon(),
-                #     rx.chakra.alert_title(
-                #         "Error Reflex version is out of date."
-                #     ),
-                #     status="error",
-                # ),
+                rx.button("Go Home", on_click = rx.redirect("/"),),
+
             ),
             width = "100%",
             height="100vh",
             align="center",
-            # justify="center",
-            # spacing = "2",
-            # direction = "column",
-        )
+
+        ),
     )
 
 def webcam_upload_component(ref: str) -> rx.Component:
@@ -258,7 +256,6 @@ def WebcamPage() ->rx.Component:
                                     justify="between",
                                 ),
 
-                                
                                 width = "100%",
                                 align= "center",
                             ),
