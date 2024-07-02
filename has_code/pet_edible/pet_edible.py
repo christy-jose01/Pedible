@@ -34,14 +34,19 @@ class State(rx.State):
     isedible: bool
     reason: str
     severity: str
+    use_front_camera: bool = True
+    video_constraints: str = "facingMode"
 
     def img_taken(self):
         self.if_img = not self.if_img
 
     def toggle_webcam(self):
-        self.webcam_open = not self.webcam_open
+        self.webcam_open = True
         # print("webcam open", self.webcam_open)
         return rx.redirect("/webcam")
+    
+    def toggle_facing_camera(self):
+        self.use_front_camera = not self.use_front_camera
     
     def retake_webcam(self):
         self.webcam_open = True
@@ -53,7 +58,6 @@ class State(rx.State):
             img_data_uri: The data uri of the screenshot (from upload_screenshot).
         """
         if self.loading:
-
             return
         self.last_screenshot_timestamp = time.strftime("%H:%M:%S")
         self.if_img=True
@@ -90,6 +94,7 @@ class State(rx.State):
 def last_screenshot_widget() -> rx.Component:
     """Widget for displaying the last screenshot and timestamp."""
     return rx.box(
+        
         rx.cond(
             State.last_screenshot,
             rx.fragment(
@@ -195,6 +200,12 @@ def webcam_upload_component(ref: str) -> rx.Component:
         align="center",
     )
 
+def flip_camera(State):
+    State.toggle_facing_camera()
+    State.video_constraints = rx.match(State.use_front_camera,("facingMode", "user"), "environment")
+    return
+
+
 @rx.page(route="/webcam", title="WebcamPage")
 def WebcamPage() ->rx.Component:
     return rx.fragment(
@@ -205,8 +216,13 @@ def WebcamPage() ->rx.Component:
                     rx.cond(
                         State.webcam_open,
                         rx.vstack(
+                            rx.button(
+                                rx.icon(tag= "rotate-cw-square"),
+                                on_click = flip_camera(State),
+                            ),
                             # webcam display
                             webcam(
+                                videoConstraints= State.video_constraints,
                                 id="webcam",
                                 border_radius = "10%",),
                             # this is the click button
