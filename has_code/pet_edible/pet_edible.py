@@ -35,7 +35,7 @@ class State(rx.State):
     reason: str
     severity: str
     use_front_camera: bool = True
-    video_constraints: str = "facingMode"
+    video_constraints: dict = {"facingMode": "user"}
 
     def img_taken(self):
         self.if_img = not self.if_img
@@ -89,7 +89,15 @@ class State(rx.State):
             print(self.reason)
             print(self.severity)
             return rx.redirect("/analysis")
-            
+
+    def flip_camera(self):
+        print("flipped camera")
+        self.use_front_camera = not self.use_front_camera
+        self.video_constraints = rx.cond(
+            self.use_front_camera,
+            {"facingMode": "user"},
+            {"facingMode": "environment"}
+        )
 
 def last_screenshot_widget() -> rx.Component:
     """Widget for displaying the last screenshot and timestamp."""
@@ -200,10 +208,7 @@ def webcam_upload_component(ref: str) -> rx.Component:
         align="center",
     )
 
-def flip_camera(State):
-    State.toggle_facing_camera()
-    State.video_constraints = rx.match(State.use_front_camera,("facingMode", "user"), "environment")
-    return
+
 
 
 @rx.page(route="/webcam", title="WebcamPage")
@@ -218,7 +223,7 @@ def WebcamPage() ->rx.Component:
                         rx.vstack(
                             rx.button(
                                 rx.icon(tag= "rotate-cw-square"),
-                                on_click = flip_camera(State),
+                                on_click = State.flip_camera,
                             ),
                             # webcam display
                             webcam(
