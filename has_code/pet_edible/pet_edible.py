@@ -74,16 +74,16 @@ class State(rx.State):
             predicted_class_idx = logits.argmax(-1).item()
             model_prediction = model.config.id2label[predicted_class_idx]
             response = gemini(model_prediction,img)
-            print(response)
+            # print(response)
             if type(response) is list:
                 response = response[0]
             self.isedible = response['isEdible']
             self.reason = response['reason']
             self.severity = response['severity'] 
 
-            print(self.isedible)
-            print(self.reason)
-            print(self.severity)
+            # print(self.isedible)
+            # print(self.reason)
+            # print(self.severity)
             return rx.redirect("/analysis")
             
 
